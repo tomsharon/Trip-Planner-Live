@@ -58,7 +58,7 @@ function initialize_gmaps() {
 }
 
 
-
+// var count = 1;
 var allTheMarkers = [];
 
 
@@ -70,9 +70,11 @@ function drawLocation(map, location, opts, name) {
   opts.position = new google.maps.LatLng(location[0], location[1]);
   opts.map = map;
   var marker = new google.maps.Marker(opts);
-  // allTheMarkers.push({name: marker});
-  allTheMarkers.push({name: name, marker: marker});
-  console.log(allTheMarkers);
+
+  //Store all markers w/ associated names for later removal, according to name. (i.e. remove Ritz Hotel)
+  allTheMarkers.push({day: +$("#day-title").text().slice(-1), name: name, marker: marker});
+
+  //+$("#day-title").text().slice(-1) is the current day (i.e. today)
 }
 
 
