@@ -96,24 +96,43 @@ $(document).ready(function() {
 		var thingToRemove = allTheMarkers.filter(function (objectElement) {
 			//the name of the thing is in this.siblings().text() -- that is, the span next to the button we just clicked.
 			return objectElement.name === $this.siblings().text();
-		})[0];
+		});
 
 
 		//Remove name of thing from itinerary on our webpage
 		$this.parent().parent().remove();
 
 		//marker.setMap(null) is how we remove markers from a Google Map
-		thingToRemove.marker.setMap(null);
+		thingToRemove.forEach(function(thing) {
+			thing.marker.setMap(null)
+		})
+
+
+
+		//The above gets rid of the activity from the itinerary list, and gets rid of the marker from the map.
+		//However, given the way we've set everything up, we need to remove the activity and the marker permanently
+		//in order not to render it in the future.
+
+		//While I can't actually remove the activity from the activitiesFromAllDays array, what I can do is set the
+		//activity's latLong equal to an empty array so that drawLocation() won't be able to render it
+		//and set its listItem equal to null so that it won't be appended to the itinerary in the future.
+		activitiesFromAllDays.forEach(function(activityObj) {
+			if(activityObj.name === $this.siblings().text()) {
+				activityObj.latLong = [];
+				activityObj.listItem = null;
+			}
+		})
 
 	})
 
 
-	var count = 1;
+	// var count = 1;
 	$("#ADD-DAY").on('click', function () {
 
-		count += 1;
+		// count += 1;
+		//instead of using count, I use the current day, which is +$("#day-title").text().slice(-1)
 
-		var newDay = "<button id='newDayIAdded' class='btn btn-circle day-btn' style='margin-right: 4px'>" + count + "</button>"
+		var newDay = "<button id='newDayIAdded' class='btn btn-circle day-btn' style='margin-right: 4px'>" + (+$("#day-title").text().slice(-1) + 1) + "</button>"
 		
 		$("#existingDays").append(newDay)
 
@@ -143,7 +162,7 @@ $(document).ready(function() {
 	
 
 	//Given the above, this approach should work:
-	//When switching days:
+	//When SWITCHING DAYS:
 	$("#existingDays").on("click", ".day-btn", function() {
 
 		//If the day you're clicking on isn't the current day
@@ -210,7 +229,45 @@ $(document).ready(function() {
 
 		//This is all the info we need to re-render it on our map, and add it back into the appropraite <ul>
 	
-	})	
+	})
+
+
+
+	$("#REMOVEDAY").on("click", function() {
+		//Remove all activities on our list for the day
+		$(".itinerary-item").remove()
+
+		//loop thru all the markers
+		allTheMarkers.forEach(function(objWithMarker) {
+			//if a marker was for an activity on the day we're removing
+			if(objWithMarker.day === +$("#day-title").text().slice(-1)) {
+				//remove that marker
+				objWithMarker.marker.setMap(null)
+				//and also remove that activity from our list of activitiesFromAllDays
+				//so that it is neither rendered on the map nor added to our itinerary list in the future
+				//Note: Since I used an array to store activitiesFromAllDays
+				//I can't actually remove the obj with that activity, 
+				//but I can make sure that their is no latLong to drawLocation()
+				//and that there is no listItem to append to the appropriate <ul>
+				activitiesFromAllDays.forEach(function(activityObj) {
+					if(objWithMarker.name === activityObj.name) {
+						activityObj.latLong = []
+						activityObj.listItem = null
+					}
+				})
+			}
+		})
+
+		$(".current-day").remove()
+
+		//^^Need to fix count before I can remove the current day altogether
+
+	})
+
+
+
+	//final step, add media queries
+
 })
 
 
